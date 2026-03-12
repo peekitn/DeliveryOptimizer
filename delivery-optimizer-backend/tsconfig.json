@@ -14,6 +14,6 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../delivery-optimizer-frontend/src/services/geocoding.ts", "../delivery-optimizer-frontend/src/services/geocodingService.ts"],
   "exclude": ["node_modules"]
 }

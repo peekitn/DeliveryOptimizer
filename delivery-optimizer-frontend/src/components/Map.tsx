@@ -15,7 +15,7 @@ import 'ol/ol.css';
 interface Props {
   onAddPoint: (coord: [number, number]) => void;
   points: [number, number][];
-  route?: any; // GeoJSON LineString
+  route?: any; // GeoJSON LineString (já a geometria)
 }
 
 const MapComponent: React.FC<Props> = ({ onAddPoint, points, route }) => {
@@ -91,22 +91,40 @@ const MapComponent: React.FC<Props> = ({ onAddPoint, points, route }) => {
 
   // Atualiza rota
   useEffect(() => {
-    if (!map || !route) return;
-    if (routeLayerRef.current) map.removeLayer(routeLayerRef.current);
+    if (!map) return;
+    // Remove camada de rota anterior se existir
+    if (routeLayerRef.current) {
+      map.removeLayer(routeLayerRef.current);
+      routeLayerRef.current = undefined;
+    }
 
-    const lineFeature = new Feature({
-      geometry: new LineString(
-        route.geometry.coordinates.map((c: [number, number]) => fromLonLat(c))
-      ),
-    });
-    lineFeature.setStyle(
-      new Style({ stroke: new Stroke({ color: 'blue', width: 4 }) })
-    );
+    // Se não há rota, não faz nada
+    if (!route) return;
 
-    const vectorSource = new VectorSource({ features: [lineFeature] });
-    const vectorLayer = new VectorLayer({ source: vectorSource });
-    map.addLayer(vectorLayer);
-    routeLayerRef.current = vectorLayer;
+    // Verifica se a rota tem a estrutura esperada (GeoJSON LineString)
+    // Agora route é a própria geometria, não o objeto com .geometry
+    if (route.type !== 'LineString' || !route.coordinates) {
+      console.error('Rota inválida (esperado LineString):', route);
+      return;
+    }
+
+    try {
+      const lineFeature = new Feature({
+        geometry: new LineString(
+          route.coordinates.map((c: [number, number]) => fromLonLat(c))
+        ),
+      });
+      lineFeature.setStyle(
+        new Style({ stroke: new Stroke({ color: 'blue', width: 4 }) })
+      );
+
+      const vectorSource = new VectorSource({ features: [lineFeature] });
+      const vectorLayer = new VectorLayer({ source: vectorSource });
+      map.addLayer(vectorLayer);
+      routeLayerRef.current = vectorLayer;
+    } catch (error) {
+      console.error('Erro ao desenhar rota:', error);
+    }
   }, [route, map]);
 
   return <div ref={mapRef} style={{ width: '100%', height: '100%' }} />;

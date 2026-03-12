@@ -5,7 +5,7 @@ const router = Router();
 
 router.post('/calculate', async (req, res) => {
   try {
-    const { waypoints } = req.body; // array de {lat, lng}
+    const { waypoints } = req.body;
     if (!waypoints || waypoints.length < 2) {
       return res.status(400).json({ error: 'Envie pelo menos 2 pontos' });
     }

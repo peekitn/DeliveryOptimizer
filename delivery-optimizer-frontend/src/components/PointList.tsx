@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -19,6 +19,7 @@ import {
   restrictToParentElement,
 } from '@dnd-kit/modifiers';
 import { SortableItem } from './SortableItem';
+import { searchAddress } from '../services/geocoding';
 import './PointList.css';
 
 interface PointListProps {
@@ -26,7 +27,9 @@ interface PointListProps {
   onRemove: (index: number) => void;
   onReorder: (newPoints: [number, number][]) => void;
   onCalculate: () => void;
+  onAddPoint: (coord: [number, number]) => void;
   loading: boolean;
+  routeInfo: { distanceKm: number; durationMin: number } | null;
 }
 
 const PointList: React.FC<PointListProps> = ({
@@ -34,8 +37,13 @@ const PointList: React.FC<PointListProps> = ({
   onRemove,
   onReorder,
   onCalculate,
+  onAddPoint,
   loading,
+  routeInfo,
 }) => {
+  const [address, setAddress] = useState('');
+  const [searching, setSearching] = useState(false);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -52,9 +60,43 @@ const PointList: React.FC<PointListProps> = ({
     }
   };
 
+  const handleSearch = async () => {
+    if (!address.trim()) return;
+    setSearching(true);
+    try {
+      const coords = await searchAddress(address);
+      if (coords) {
+        onAddPoint(coords); // [lng, lat]
+        setAddress('');
+      } else {
+        alert('Endereço não encontrado');
+      }
+    } catch (error) {
+      console.error('Erro na busca:', error);
+      alert('Erro ao buscar endereço');
+    } finally {
+      setSearching(false);
+    }
+  };
+
   return (
     <div className="point-list">
       <h3>📌 Pontos de Entrega</h3>
+
+      {/* Campo de busca de endereço */}
+      <div className="search-container">
+        <input
+          type="text"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          placeholder="Digite um endereço..."
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+        />
+        <button onClick={handleSearch} disabled={searching}>
+          {searching ? '🔍' : 'Buscar'}
+        </button>
+      </div>
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -78,6 +120,15 @@ const PointList: React.FC<PointListProps> = ({
           </div>
         </SortableContext>
       </DndContext>
+
+      {/* Informações da rota */}
+      {routeInfo && (
+        <div className="route-info">
+          <p><strong>Distância:</strong> {routeInfo.distanceKm.toFixed(2)} km</p>
+          <p><strong>Tempo estimado:</strong> {routeInfo.durationMin.toFixed(0)} min</p>
+        </div>
+      )}
+
       <button className="calculate-btn" onClick={onCalculate} disabled={points.length < 2 || loading}>
         {loading ? '🔄 Calculando...' : '🚀 Calcular Rota Otimizada'}
       </button>
