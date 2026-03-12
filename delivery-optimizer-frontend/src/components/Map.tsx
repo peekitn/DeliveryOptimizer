@@ -15,7 +15,7 @@ import 'ol/ol.css';
 interface Props {
   onAddPoint: (coord: [number, number]) => void;
   points: [number, number][];
-  route?: any; // GeoJSON LineString (já a geometria)
+  route?: any; // GeoJSON LineString
 }
 
 const MapComponent: React.FC<Props> = ({ onAddPoint, points, route }) => {
@@ -48,7 +48,6 @@ const MapComponent: React.FC<Props> = ({ onAddPoint, points, route }) => {
     };
   }, []);
 
-  // Resize observer
   useEffect(() => {
     if (!map) return;
     const resizeObserver = new ResizeObserver(() => map.updateSize());
@@ -56,7 +55,7 @@ const MapComponent: React.FC<Props> = ({ onAddPoint, points, route }) => {
     return () => resizeObserver.disconnect();
   }, [map]);
 
-  // Atualiza pontos
+  // Atualiza pontos com estilos diferenciados
   useEffect(() => {
     if (!map) return;
     if (pointLayerRef.current) map.removeLayer(pointLayerRef.current);
@@ -66,11 +65,17 @@ const MapComponent: React.FC<Props> = ({ onAddPoint, points, route }) => {
         geometry: new Point(fromLonLat(coord)),
         label: `Ponto ${index + 1}`,
       });
+
+      // Define a cor baseada na posição
+      let color = '#3b82f6'; // azul para intermediários
+      if (index === 0) color = '#10b981'; // verde para origem
+      if (index === points.length - 1 && points.length > 1) color = '#ef4444'; // vermelho para destino
+
       feature.setStyle(
         new Style({
           image: new Circle({
             radius: 8,
-            fill: new Fill({ color: 'red' }),
+            fill: new Fill({ color }),
             stroke: new Stroke({ color: 'white', width: 2 }),
           }),
           text: new Text({
@@ -92,17 +97,13 @@ const MapComponent: React.FC<Props> = ({ onAddPoint, points, route }) => {
   // Atualiza rota
   useEffect(() => {
     if (!map) return;
-    // Remove camada de rota anterior se existir
     if (routeLayerRef.current) {
       map.removeLayer(routeLayerRef.current);
       routeLayerRef.current = undefined;
     }
 
-    // Se não há rota, não faz nada
     if (!route) return;
 
-    // Verifica se a rota tem a estrutura esperada (GeoJSON LineString)
-    // Agora route é a própria geometria, não o objeto com .geometry
     if (route.type !== 'LineString' || !route.coordinates) {
       console.error('Rota inválida (esperado LineString):', route);
       return;

@@ -11,6 +11,12 @@ function App() {
   const [route, setRoute] = useState<any>(null);
   const [routeInfo, setRouteInfo] = useState<{ distanceKm: number; durationMin: number } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const showError = (msg: string) => {
+    setErrorMessage(msg);
+    setTimeout(() => setErrorMessage(null), 5000);
+  };
 
   const addPoint = (coord: [number, number]) => {
     setPoints(prev => [...prev, coord]);
@@ -43,7 +49,7 @@ function App() {
       });
     } catch (error) {
       console.error('Erro ao calcular rota', error);
-      alert('Não foi possível calcular a rota. Tente outros pontos.');
+      showError('Não foi possível calcular a rota. Tente outros pontos.');
     } finally {
       setLoading(false);
     }
@@ -62,9 +68,10 @@ function App() {
             onRemove={removePoint}
             onReorder={reorderPoints}
             onCalculate={handleCalculateRoute}
-            onAddPoint={addPoint}          // nova prop para geocoding
+            onAddPoint={addPoint}
             loading={loading}
-            routeInfo={routeInfo}           // exibe distância e tempo
+            routeInfo={routeInfo}
+            errorMessage={errorMessage}
           />
         </aside>
         <main className="map-container">

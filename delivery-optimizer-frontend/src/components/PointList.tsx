@@ -43,6 +43,7 @@ const PointList: React.FC<PointListProps> = ({
 }) => {
   const [address, setAddress] = useState('');
   const [searching, setSearching] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -66,16 +67,19 @@ const PointList: React.FC<PointListProps> = ({
     try {
       const coords = await searchAddress(address);
       if (coords) {
-        onAddPoint(coords); // [lng, lat]
+        onAddPoint(coords);
         setAddress('');
+        setToast({ message: 'Endereço encontrado!', type: 'success' });
       } else {
-        alert('Endereço não encontrado');
+        setToast({ message: 'Endereço não encontrado', type: 'error' });
       }
     } catch (error) {
       console.error('Erro na busca:', error);
-      alert('Erro ao buscar endereço');
+      setToast({ message: 'Erro ao buscar endereço', type: 'error' });
     } finally {
       setSearching(false);
+      // Auto-esconder o toast após 3 segundos
+      setTimeout(() => setToast(null), 3000);
     }
   };
 
@@ -83,7 +87,13 @@ const PointList: React.FC<PointListProps> = ({
     <div className="point-list">
       <h3>📌 Pontos de Entrega</h3>
 
-      {/* Campo de busca de endereço */}
+      {/* Toast */}
+      {toast && (
+        <div className={`toast ${toast.type}`}>
+          {toast.message}
+        </div>
+      )}
+
       <div className="search-container">
         <input
           type="text"
@@ -121,7 +131,6 @@ const PointList: React.FC<PointListProps> = ({
         </SortableContext>
       </DndContext>
 
-      {/* Informações da rota */}
       {routeInfo && (
         <div className="route-info">
           <p><strong>Distância:</strong> {routeInfo.distanceKm.toFixed(2)} km</p>

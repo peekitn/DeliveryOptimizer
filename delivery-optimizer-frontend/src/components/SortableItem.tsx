@@ -34,16 +34,27 @@ export const SortableItem: React.FC<SortableItemProps> = ({
       ref={setNodeRef}
       style={style}
       className={`point-item ${isDragging ? 'dragging' : ''}`}
-      {...attributes}
-      {...listeners}
     >
-      <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+      {/* Área arrastável – contém apenas o índice e as coordenadas */}
+      <div
+        style={{ display: 'flex', alignItems: 'center', flex: 1 }}
+        {...attributes}
+        {...listeners}
+      >
         <span className="point-index">{index + 1}</span>
         <span className="point-coords">
           {point[1].toFixed(4)}, {point[0].toFixed(4)}
         </span>
       </div>
-      <button className="remove-btn" onClick={() => onRemove(index)}>
+
+      {/* Botão de remover – fora da área arrastável */}
+      <button
+        className="remove-btn"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove(index);
+        }}
+      >
         🗑️
       </button>
     </div>
