@@ -113,6 +113,8 @@
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 0.9rem;
+  background: white; /* Força fundo branco */
+  color: #1e293b;   /* Cor do texto escura para contraste */
 }
 
 .search-container button {
@@ -138,6 +140,7 @@
   margin: 1rem 0;
   font-size: 0.9rem;
 }
+
 .toast {
   position: fixed;
   top: 20px;
@@ -146,8 +149,9 @@
   border-radius: 8px;
   color: white;
   font-weight: 500;
-  z-index: 1000;
+  z-index: 9999; /* Aumentei o z-index para garantir que fique sobre tudo */
   animation: slideIn 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .toast.error {
