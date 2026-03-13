@@ -29,7 +29,9 @@ interface PointListProps {
   onCalculate: () => void;
   onAddPoint: (coord: [number, number]) => void;
   loading: boolean;
-  routeInfo: { distanceKm: number; durationMin: number } | null;
+  routeInfo: { distanceKm: number; durationMin: number; profile: string } | null;
+  profile: 'car' | 'bike' | 'foot';
+  onProfileChange: (profile: 'car' | 'bike' | 'foot') => void;
 }
 
 const PointList: React.FC<PointListProps> = ({
@@ -40,6 +42,8 @@ const PointList: React.FC<PointListProps> = ({
   onAddPoint,
   loading,
   routeInfo,
+  profile,
+  onProfileChange,
 }) => {
   const [address, setAddress] = useState('');
   const [searching, setSearching] = useState(false);
@@ -78,7 +82,6 @@ const PointList: React.FC<PointListProps> = ({
       setToast({ message: 'Erro ao buscar endereço', type: 'error' });
     } finally {
       setSearching(false);
-      // Auto-esconder o toast após 3 segundos
       setTimeout(() => setToast(null), 3000);
     }
   };
@@ -87,7 +90,6 @@ const PointList: React.FC<PointListProps> = ({
     <div className="point-list">
       <h3>📌 Pontos de Entrega</h3>
 
-      {/* Toast */}
       {toast && (
         <div className={`toast ${toast.type}`}>
           {toast.message}
@@ -105,6 +107,16 @@ const PointList: React.FC<PointListProps> = ({
         <button onClick={handleSearch} disabled={searching}>
           {searching ? '🔍' : 'Buscar'}
         </button>
+      </div>
+
+      {/* Seletor de perfil */}
+      <div className="profile-selector">
+        <label>Perfil de viagem:</label>
+        <select value={profile} onChange={(e) => onProfileChange(e.target.value as any)}>
+          <option value="car">🚗 Carro</option>
+          <option value="bike">🚲 Bicicleta</option>
+          <option value="foot">🚶 A pé</option>
+        </select>
       </div>
 
       <DndContext
@@ -134,7 +146,7 @@ const PointList: React.FC<PointListProps> = ({
       {routeInfo && (
         <div className="route-info">
           <p><strong>Distância:</strong> {routeInfo.distanceKm.toFixed(2)} km</p>
-          <p><strong>Tempo estimado:</strong> {routeInfo.durationMin.toFixed(0)} min</p>
+          <p><strong>Tempo estimado:</strong> {routeInfo.durationMin.toFixed(0)} min ({routeInfo.profile})</p>
         </div>
       )}
 

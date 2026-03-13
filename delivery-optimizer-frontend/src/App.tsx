@@ -5,18 +5,14 @@ import { calculateRoute } from './services/api';
 import './App.css';
 
 type Point = [number, number]; // [lng, lat]
+type Profile = 'car' | 'bike' | 'foot';
 
 function App() {
   const [points, setPoints] = useState<Point[]>([]);
   const [route, setRoute] = useState<any>(null);
-  const [routeInfo, setRouteInfo] = useState<{ distanceKm: number; durationMin: number } | null>(null);
+  const [routeInfo, setRouteInfo] = useState<{ distanceKm: number; durationMin: number; profile: Profile } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const showError = (msg: string) => {
-    setErrorMessage(msg);
-    setTimeout(() => setErrorMessage(null), 5000);
-  };
+  const [profile, setProfile] = useState<Profile>('car');
 
   const addPoint = (coord: [number, number]) => {
     setPoints(prev => [...prev, coord]);
@@ -41,15 +37,16 @@ function App() {
     setLoading(true);
     try {
       const waypoints = points.map(([lng, lat]) => ({ lat, lng }));
-      const result = await calculateRoute(waypoints);
+      const result = await calculateRoute(waypoints, profile);
       setRoute(result.geometry);
       setRouteInfo({
         distanceKm: result.distanceKm,
         durationMin: result.durationMin,
+        profile: result.profile,
       });
     } catch (error) {
       console.error('Erro ao calcular rota', error);
-      showError('Não foi possível calcular a rota. Tente outros pontos.');
+      alert('Não foi possível calcular a rota. Tente outros pontos ou perfil.');
     } finally {
       setLoading(false);
     }
@@ -71,7 +68,8 @@ function App() {
             onAddPoint={addPoint}
             loading={loading}
             routeInfo={routeInfo}
-            errorMessage={errorMessage}
+            profile={profile}
+            onProfileChange={setProfile}
           />
         </aside>
         <main className="map-container">

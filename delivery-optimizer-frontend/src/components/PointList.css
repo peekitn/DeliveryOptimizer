@@ -172,3 +172,23 @@
     opacity: 1;
   }
 }
+.profile-selector {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profile-selector label {
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+.profile-selector select {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
